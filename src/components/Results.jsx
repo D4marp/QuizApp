@@ -4,7 +4,6 @@ import useLocalStorage from "../hooks/useLocalStorage";
 import Confetti from "react-confetti";
 import { useWindowSize } from "react-use";
 import { createPortal } from "react-dom";
-import { FaCheckCircle, FaTimesCircle, FaRedoAlt, FaFireAlt } from "react-icons/fa";
 
 export default function Results() {
   const {
@@ -17,99 +16,99 @@ export default function Results() {
     secondsRemaining,
   } = useQuiz();
 
-  // [Local Storage Essentials]
-  const { data: users, setData: setUsers } = useLocalStorage([], "dot_quizz_user");
-  const { data: usersHighscore, setData: setUsersHighscore } = useLocalStorage([], "dot_quizz_user_highscore");
+  ////////[Local Storage Essentials]
+  const { data: users, setData: setUsers } = useLocalStorage(
+    [],
+    "dot_quizz_user"
+  );
+  const { data: usersHighscore, setData: setUsersHighscore } = useLocalStorage(
+    [],
+    "dot_quizz_user_highscore"
+  );
   const { data: currentUser } = useLocalStorage([], "dot_quizz_current_user");
 
   const { width, height } = useWindowSize();
 
   let score;
+
   if (secondsRemaining >= 1) {
     score = secondsRemaining * correctAnswer;
   } else {
     score = correctAnswer * (100 / 15);
   }
 
-  const currentUserHighscore = usersHighscore.find(
-    (user) => user.username === currentUser.username && user.email === currentUser.email
-  )?.highscore ?? 0;
+  const currentUserHighscore = usersHighscore.find((user) => {
+    return (
+      user.username === currentUser.username && user.email === currentUser.email
+    );
+  })?.highscore;
 
-  // Update user and highscore only once, if the new score beats the previous
   useEffect(() => {
-    if (score > currentUserHighscore) {
+    if (score >= currentUserHighscore && currentUserHighscore !== undefined) {
       let updatedUsers = users.map((user) =>
-        user.username === currentUser.username && user.email === currentUser.email
-          ? { ...user, quiz: { ...state, highscore: score } }
+        user.username === currentUser.username &&
+        user.email === currentUser.email
+          ? {
+              ...user,
+              quiz: {
+                ...state,
+                highscore: score,
+              },
+            }
           : user
       );
       const updateHighscore = usersHighscore.map((user) =>
-        user.username === currentUser.username && user.email === currentUser.email
+        user.username === currentUser.username &&
+        user.email === currentUser.email
           ? { ...user, highscore: score }
           : user
       );
       setUsers(updatedUsers);
       setUsersHighscore(updateHighscore);
     }
-    // eslint-disable-next-line
-  }, []); // Only run once on mount
-
-  const isNewHighscore = score > currentUserHighscore;
+  }, []);
 
   return (
     <>
-      {isNewHighscore && createPortal(<Confetti width={width} height={height} />, document.body)}
-      <div className="mx-auto w-full max-w-xl mt-16 mb-8 p-0 flex flex-col items-center">
-        <h2 className="text-5xl font-extrabold text-[#192378] mb-6 drop-shadow tracking-tight flex items-center gap-4">
-          <FaFireAlt className="text-[#fcb900] text-4xl" />
+      {score >= currentUserHighscore &&
+        createPortal(<Confetti width={width} height={height} />, document.body)}
+      <div className="bg-transparent grid border-blue-500 border-[0.5px] rounded-xl p-8 backdrop-blur-md">
+        <h2 className="text-[#1e266e] text-5xl pb-8 border-b-2 font-semibold border-[#1864ab] mb-12">
           Results
         </h2>
-        {isNewHighscore && (
-          <div className="w-full flex items-center justify-center mb-6">
-            <span className="text-2xl md:text-3xl font-bold text-[#2460f4] bg-[#e7f5ff] px-6 py-2 rounded-xl flex items-center gap-3 shadow">
-              <FaFireAlt className="text-[#fcb900] animate-bounce" />
-              Wow {currentUser.username}, you set a new Highscore!
-            </span>
-          </div>
-        )}
-        <ul className="w-full flex flex-col gap-5 text-xl md:text-2xl font-medium text-[#1e266e]">
-          <li className="flex items-center justify-between border-b border-[#e9ecef] py-2">
-            <span className="flex items-center gap-2">
-              <FaCheckCircle className="text-green-500" />
-              Correct Answers
-            </span>
-            <span className="font-bold">{correctAnswer}</span>
+        <ul className="text-3xl items-center justify-center text-[#1e266e] gap-8 grid grid-cols-3">
+          {score >= currentUserHighscore && (
+            <li className="col-span-3 mb-8 font-bold">
+              Wow {currentUser.username}, you set a new Highscore🔥🔥🔥
+            </li>
+          )}
+          <li>Correct Answer</li>
+          <li>:</li>
+          <li>{correctAnswer}</li>
+          <li>Incorrect Answer</li>
+          <li>:</li>
+          <li>{incorrectAnswer}</li>
+          <li>Answered Questions</li>
+          <li>:</li>
+          <li>
+            {correctAnswer + incorrectAnswer} of {questions.length}
           </li>
-          <li className="flex items-center justify-between border-b border-[#e9ecef] py-2">
-            <span className="flex items-center gap-2">
-              <FaTimesCircle className="text-red-400" />
-              Incorrect Answers
-            </span>
-            <span className="font-bold">{incorrectAnswer}</span>
-          </li>
-          <li className="flex items-center justify-between border-b border-[#e9ecef] py-2">
-            <span>Answered Questions</span>
-            <span className="font-bold">
-              {correctAnswer + incorrectAnswer} of {questions.length}
-            </span>
-          </li>
-          <li className="flex items-center justify-between border-b border-[#e9ecef] py-2">
-            <span>Score</span>
-            <span className="text-[#2460f4] font-extrabold text-2xl">{score ?? 0}</span>
-          </li>
-          <li className="flex items-center justify-between py-2">
-            <span>Highscore</span>
-            <span className="text-[#fcb900] font-extrabold text-2xl">{Math.max(score, currentUserHighscore)}</span>
-          </li>
+          <li>Score</li>
+          <li>:</li>
+          <li>{score ?? 0}</li>
+          <li>Highscore</li>
+          <li>:</li>
+          <li>{currentUserHighscore}</li>
         </ul>
         <button
           onClick={() => dispatch({ type: QuizState.RETAKE })}
-          className="mt-12 flex items-center gap-3 text-2xl md:text-3xl bg-gradient-to-r from-[#2460f4] to-[#192378] text-white font-bold py-3 px-8 rounded-xl shadow-lg hover:scale-[1.04] hover:shadow-xl transition-all duration-150"
+          className="mt-16 text-3xl hover:bg-[#f4f4f4] hover:text-[#1e266e] text[#fff2f7] rounded-full px-6 py-4 bg-[#1e266e]"
         >
-          <FaRedoAlt className="text-white" />
           Retake Quiz
         </button>
       </div>
     </>
   );
 }
+
+// Results.jsx:60 Warning: Maximum update depth exceeded. This can happen when a component calls setState inside useEffect, but useEffect either doesn't have a dependency array, or one of the dependencies changes on every render.

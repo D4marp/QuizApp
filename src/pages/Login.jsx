@@ -50,7 +50,7 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#192378] via-[#2460f4] to-[#71b7fb] flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-[#e0e7ff] via-[#bcdffb] to-[#f0f4ff] f flex items-center justify-center">
       <form
         onSubmit={handleSubmit(onSubmit)}
         className="w-full max-w-md bg-white/90 shadow-2xl rounded-2xl p-10 flex flex-col gap-8 backdrop-blur-lg"
